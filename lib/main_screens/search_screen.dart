@@ -19,7 +19,6 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   stt.SpeechToText _speechToText = stt.SpeechToText();
   bool _speechEnabled = false;
-  bool _isListening = false;
 
   @override
   void initState() {
@@ -46,12 +45,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   void _searchContent(String query) async {
     if (query.isNotEmpty) {
       try {
-        if (_tabController?.index == 0) { // Movies/TV Shows tab
+        if (_tabController?.index == 0) {
           final results = await _apiService.searchContent(query);
           setState(() {
             _searchResults = results;
           });
-        } else if (_tabController?.index == 1) { // Actors tab
+        } else if (_tabController?.index == 1) {
           final results = await _apiService.fetchMoviesByActorName(query);
           setState(() {
             _actorSearchResults = results;
@@ -73,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   }
 
   void _listen() async {
-    if (!_isListening) {
+    if (!_speechToText.isListening) {
       bool available = await _speechToText.listen(
         onResult: (val) => setState(() {
           _searchController.text = val.recognizedWords;
@@ -81,11 +80,11 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         }),
       );
       if (available) {
-        setState(() => _isListening = true);
+        setState(() {});
       }
     } else {
       _speechToText.stop();
-      setState(() => _isListening = false);
+      setState(() {});
     }
   }
 
@@ -122,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
+            icon: Icon(_speechToText.isListening ? Icons.mic_off : Icons.mic),
             onPressed: _speechEnabled ? _listen : null,
           ),
         ],
@@ -130,12 +129,10 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Movies/TV Shows search results
           ListView.builder(
             itemCount: _searchResults.length,
             itemBuilder: (context, index) => _buildMovieTvShowTile(_searchResults[index]),
           ),
-          // Actor search results
           ListView.builder(
             itemCount: _actorSearchResults.length,
             itemBuilder: (context, index) => _buildMovieTvShowTile(_actorSearchResults[index]),

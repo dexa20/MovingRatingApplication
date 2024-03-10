@@ -68,14 +68,16 @@ class HomeScreen extends StatelessWidget {
                     'Menu',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     FirebaseAuth.instance.currentUser?.email ?? 'No email found',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

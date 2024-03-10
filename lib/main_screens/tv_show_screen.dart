@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '/models/movie.dart';
 import '/services/api_service.dart';
 import '/widgets/movie_card.dart';
@@ -15,17 +16,26 @@ class _TVShowScreenState extends State<TVShowScreen> {
   String selectedGenre = 'Popular TV Shows';
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechEnabled = false;
 
   @override
   void initState() {
     super.initState();
     futureTVShows = ApiService().fetchPopularTVShows();
+    _initSpeech();
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize(onError: (error) => print("SpeechToText error: $error"), onStatus: (status) => print("SpeechToText status: $status"));
+    setState(() {});
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _debounce?.cancel();
+    _speechToText.stop();
     super.dispose();
   }
 
@@ -44,6 +54,22 @@ class _TVShowScreenState extends State<TVShowScreen> {
         }
       });
     });
+  }
+
+  void _listen() async {
+    if (!_speechToText.isListening) {
+      bool available = await _speechToText.listen(
+        onResult: (result) => setState(() {
+          _searchController.text = result.recognizedWords;
+          _fetchTVShows(query: result.recognizedWords);
+        }),
+      );
+      if (!available) {
+        setState(() => _speechEnabled = false);
+      }
+    } else {
+      _speechToText.stop();
+    }
   }
 
   @override
@@ -67,9 +93,13 @@ class _TVShowScreenState extends State<TVShowScreen> {
         ),
         backgroundColor: Colors.green,
         actions: <Widget>[
+          IconButton(
+            icon: Icon(_speechToText.isListening ? Icons.mic_off : Icons.mic),
+            onPressed: _speechEnabled ? _listen : null,
+          ),
           PopupMenuButton<String>(
             onSelected: (genre) {
-              _searchController.clear(); // Clear search when selecting genre
+              _searchController.clear();
               _fetchTVShows(genre: genre);
             },
             itemBuilder: (BuildContext context) {
