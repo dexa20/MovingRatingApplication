@@ -56,31 +56,31 @@ class HomeScreen extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Menu',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                    Text(
-                      'user@example.com', // Ideally, replace this with the actual user's email fetched from FirebaseAuth
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.green,
               ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Menu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text(
+                    FirebaseAuth.instance.currentUser?.email ?? 'No email found',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
               _drawerItem(Icons.movie, 'Movies', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => MovieScreen()))),
               _drawerItem(Icons.tv, 'TV Shows', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TVShowScreen()))),
               _drawerItem(Icons.watch_later, 'Watchlist', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => WatchlistScreen()))),

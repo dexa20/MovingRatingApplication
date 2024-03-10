@@ -145,7 +145,7 @@ class _DetailScreenState extends State<DetailScreen> {
             addToWatchlist();
           }
         },
-        backgroundColor: Colors.green,
+        backgroundColor: isInWatchlist ? Colors.red : Colors.green, // This line was modified
         child: Icon(isInWatchlist ? Icons.remove : Icons.add),
       ),
     );
