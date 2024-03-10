@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398104037787",
+    "project_id": "dbtest-1117e",
+    "storage_bucket": "dbtest-1117e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398104037787:android:506c70417c3dceb58cf93e",
+        "android_client_info": {
+          "package_name": "com.example.dbtest2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhwTkTHMi6RqkfNhTaF247q7L9axwo76A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,6 @@
 {
-    "name": "test4",
-    "short_name": "test4",
+    "name": "dbtest2",
+    "short_name": "dbtest2",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

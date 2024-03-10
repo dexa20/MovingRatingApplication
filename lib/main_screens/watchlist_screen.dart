@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '/models/movie.dart';
+import '/models/movie.dart'; // Ensure these imports point to the correct files
 import '/services/api_service.dart';
 import '/widgets/movie_card.dart';
 import 'detail_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart'; // Ensure Firebase is initialized in your app
 
 class WatchlistScreen extends StatefulWidget {
   @override
@@ -13,12 +14,17 @@ class WatchlistScreen extends StatefulWidget {
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  late final FirebaseDatabase _database; // Declare _database here
   late Future<List<Movie>> futureWatchlistMovies;
 
   @override
   void initState() {
     super.initState();
+    _database = FirebaseDatabase.instanceFor(
+      app: Firebase.app(),
+      databaseURL:
+          "https://dbtest-1117e-default-rtdb.firebaseio.com/", // Replace with your actual Firebase Realtime Database URL
+    );
     futureWatchlistMovies = _fetchWatchlistMovies();
   }
 
@@ -35,7 +41,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         final int id = movieData['id'];
         final bool isTV = movieData['isTV'] ?? false;
         try {
-          final movie = await ApiService().fetchDetailsById(id, isTV);
+          final movie = await ApiService().fetchDetailsById(
+              id, isTV); // Ensure this method exists in your ApiService
           movies.add(movie);
         } catch (e) {
           print("Error fetching details: $e");
@@ -63,7 +70,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
             return GridView.builder(
               padding: EdgeInsets.all(8),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Adjust based on your layout preference
+                crossAxisCount: 2,
                 childAspectRatio: 0.6,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,

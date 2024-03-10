@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '/models/movie.dart';
+import '/models/movie.dart'; // Make sure this path matches the location of your Movie model.
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart'; // Required for Firebase initialization
 import 'package:firebase_database/firebase_database.dart';
 
 class MovieCard extends StatefulWidget {
@@ -13,22 +14,31 @@ class MovieCard extends StatefulWidget {
 }
 
 class _MovieCardState extends State<MovieCard> {
-  bool isInWatchlist = false; // State to track if the movie is in the watchlist
+  bool isInWatchlist = false;
+
+  late final FirebaseDatabase database; // Declare database here
 
   @override
   void initState() {
     super.initState();
-    checkIfInWatchlist(); // Check if the movie is in the watchlist on widget initialization
+    // Initialize the database instance with your specific URL directly here
+    database = FirebaseDatabase.instanceFor(
+      app: Firebase.app(),
+      databaseURL:
+          "https://dbtest-1117e-default-rtdb.firebaseio.com/", // Replace with your actual Firebase Database URL
+    );
+    checkIfInWatchlist();
   }
 
   void checkIfInWatchlist() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final dbRef = FirebaseDatabase.instance.ref('watchlist/${user.uid}');
-      final snapshot = await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
+      final dbRef = database.ref('watchlist/${user.uid}');
+      final snapshot =
+          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
       if (snapshot.exists) {
         setState(() {
-          isInWatchlist = true; // Update the state based on the database check
+          isInWatchlist = true;
         });
       }
     }
@@ -41,52 +51,42 @@ class _MovieCardState extends State<MovieCard> {
         'id': widget.movie.id,
         'isTV': widget.movie.isTV,
       };
-      final dbRef = FirebaseDatabase.instance.ref('watchlist/${user.uid}');
+      final dbRef = database.ref('watchlist/${user.uid}');
       await dbRef.push().set(movieData);
       setState(() {
-        isInWatchlist = true; // Update state to reflect addition
+        isInWatchlist = true;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added to watchlist!')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Added to watchlist!')));
     }
   }
 
   void removeFromWatchlist() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final dbRef = FirebaseDatabase.instance.ref('watchlist/${user.uid}');
-      // Query to find the specific movie in the watchlist
-      final snapshot = await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
+      final dbRef = database.ref('watchlist/${user.uid}');
+      final snapshot =
+          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
       if (snapshot.exists) {
+        Map<dynamic, dynamic> children =
+            snapshot.value as Map<dynamic, dynamic>;
         String? keyToRemove;
-        Map<dynamic, dynamic> children = snapshot.value as Map<dynamic, dynamic>;
-        // Iterate over the children to find the key of the movie to remove
         children.forEach((key, value) {
           if (value['id'] == widget.movie.id) {
-            keyToRemove = key; // Capture the key of the movie to remove
+            keyToRemove = key;
           }
         });
-
-        // Ensure keyToRemove is not null before proceeding with removal
         if (keyToRemove != null) {
-          // Use the null assertion operator '!' to assert that keyToRemove is not null
-          await dbRef.child(keyToRemove!).remove(); // Directly remove the movie using its key
+          await dbRef.child(keyToRemove!).remove();
           setState(() {
-            isInWatchlist = false; // Update state to reflect the removal
+            isInWatchlist = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed from watchlist!')));
-        } else {
-          // This else block might be redundant due to the null check above, but it's here for clarity
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error removing movie from watchlist.')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Removed from watchlist!')));
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Movie not found in watchlist.')));
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You need to be logged in to manage your watchlist')));
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -98,10 +98,7 @@ class _MovieCardState extends State<MovieCard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.grey[800]!,
-            Colors.grey[900]!,
-          ],
+          colors: [Colors.grey.shade800, Colors.grey.shade900],
         ),
         boxShadow: [
           BoxShadow(
@@ -121,7 +118,7 @@ class _MovieCardState extends State<MovieCard> {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[200],
+                  color: Colors.grey[200]!,
                   child: Icon(Icons.error, color: Colors.red[300], size: 50),
                 ),
               ),
@@ -138,7 +135,10 @@ class _MovieCardState extends State<MovieCard> {
                   Text(
                     widget.movie.title,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
@@ -156,7 +156,8 @@ class _MovieCardState extends State<MovieCard> {
                   SizedBox(height: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isInWatchlist ? Colors.red : Colors.green,
+                      backgroundColor:
+                          isInWatchlist ? Colors.red : Colors.green,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
