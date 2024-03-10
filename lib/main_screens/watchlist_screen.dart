@@ -41,7 +41,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         final int id = itemData['id'];
         final bool isTV = itemData['isTV'] ?? false;
         if (isTV == _displayTVShows) {
-          // Only add items that match the current mode
           try {
             final item = await ApiService().fetchDetailsById(id, isTV);
             items.add(item);
@@ -58,7 +57,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     setState(() {
       _displayTVShows = !_displayTVShows;
       futureWatchlistItems =
-          _fetchWatchlistItems(); // Refetch items based on the new mode
+          _fetchWatchlistItems();
     });
   }
 
@@ -84,19 +83,19 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           Container(
             padding: EdgeInsets.all(10),
             color: Colors
-                .grey[900], // Optional: Adds a background color to the title container for visual separation
+                .grey[900], 
             width: double
-                .infinity, // Ensures the container fills the width of the screen
+                .infinity, 
             child: Text(
               _displayTVShows ? 'TV Shows' : 'Movies',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors
-                    .white, // Ensures the text is easily readable against the background
+                    .white, 
               ),
               textAlign: TextAlign
-                  .center, // Centers the title text within the container
+                  .center, 
             ),
           ),
           Expanded(
@@ -111,10 +110,10 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                   return GridView.builder(
                     padding: EdgeInsets.all(8),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // Number of columns
-                      childAspectRatio: 0.6, // Aspect ratio of each item
-                      crossAxisSpacing: 10, // Horizontal space between items
-                      mainAxisSpacing: 10, // Vertical space between items
+                      crossAxisCount: 2, 
+                      childAspectRatio: 0.6, 
+                      crossAxisSpacing: 10, 
+                      mainAxisSpacing: 10, 
                     ),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {

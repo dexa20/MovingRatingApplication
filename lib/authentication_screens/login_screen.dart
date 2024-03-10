@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'; // Import the connectivity_plus package
-import '/main_screens/home_screen.dart'; // Update this import path according to your project structure
-import '/authentication_screens/signup_screen.dart'; // Update this path to where your SignupScreen class is located.
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '/main_screens/home_screen.dart';
+import '/authentication_screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
   String _errorMessage = '';
-  bool _isPasswordVisible = false; // State to manage password visibility
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
@@ -43,17 +43,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     setState(() {
-      _errorMessage = ''; // Reset error message
+      _errorMessage = '';
     });
 
-    // Check internet connectivity
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
       setState(() {
         _errorMessage = 'No internet connection. Please connect to the internet and try again.';
       });
-      return; // Exit the method if no internet connection
+      return;
     }
 
     final String email = _emailController.text.trim();
@@ -150,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                // Toggle visibility icon
                 suffixIcon: IconButton(
                   icon: Icon(
                     _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -163,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
               ),
-              obscureText: !_isPasswordVisible, // Control visibility
+              obscureText: !_isPasswordVisible,
             ),
             SizedBox(height: 20),
             Row(

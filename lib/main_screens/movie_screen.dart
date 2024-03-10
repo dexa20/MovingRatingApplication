@@ -61,7 +61,6 @@ class _MovieScreenState extends State<MovieScreen> {
       bool available = await _speechToText.listen(
         onResult: (result) => setState(() {
           _searchController.text = result.recognizedWords;
-          // Trigger movie fetch based on the recognized words
           _fetchMovies(query: result.recognizedWords);
         }),
       );
@@ -101,7 +100,7 @@ class _MovieScreenState extends State<MovieScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (genre) {
-              _searchController.clear(); // Clear search when selecting genre
+              _searchController.clear();
               _fetchMovies(genre: genre);
             },
             itemBuilder: (BuildContext context) {

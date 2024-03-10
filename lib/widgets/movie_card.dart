@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '/models/movie.dart'; // Make sure this path matches the location of your Movie model.
+import '/models/movie.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart'; // Required for Firebase initialization
+import 'package:firebase_core/firebase_core.dart'; 
 import 'package:firebase_database/firebase_database.dart';
 
 class MovieCard extends StatefulWidget {
@@ -16,16 +16,16 @@ class MovieCard extends StatefulWidget {
 class _MovieCardState extends State<MovieCard> {
   bool isInWatchlist = false;
 
-  late final FirebaseDatabase database; // Declare database here
+  late final FirebaseDatabase database;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the database instance with your specific URL directly here
+
     database = FirebaseDatabase.instanceFor(
       app: Firebase.app(),
       databaseURL:
-          "https://dbtest-1117e-default-rtdb.firebaseio.com/", // Replace with your actual Firebase Database URL
+          "https://dbtest-1117e-default-rtdb.firebaseio.com/", 
     );
     checkIfInWatchlist();
   }

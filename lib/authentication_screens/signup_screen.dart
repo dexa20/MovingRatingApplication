@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'; // Import the connectivity_plus package
-import '/main_screens/home_screen.dart'; // Update this import path according to your project structure
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '/main_screens/home_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -12,24 +12,21 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _errorMessage = '';
-  bool _isPasswordVisible = false; // Added variable to track password visibility
+  bool _isPasswordVisible = false;
 
   void _signUp() async {
     setState(() {
-      _errorMessage = ''; // Reset error message
+      _errorMessage = '';
     });
 
-    // Check internet connectivity
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      // No internet connection
       setState(() {
         _errorMessage = 'No internet connection. Please connect to the internet and try again.';
       });
-      return; // Exit the method if no internet connection
+      return;
     }
 
-    // Check if either the email or password fields are empty
     if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
       setState(() {
         _errorMessage = 'Please fill in all fields.';
@@ -39,13 +36,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (!_validateEmail(_emailController.text.trim())) {
       _errorMessage = 'Please enter a valid email address.';
-      setState(() {}); // Trigger UI update
+      setState(() {});
       return;
     }
 
     if (!_validatePassword(_passwordController.text.trim())) {
       _errorMessage = 'Password must be at least 6 characters.';
-      setState(() {}); // Trigger UI update
+      setState(() {});
       return;
     }
 
@@ -58,18 +55,16 @@ class _SignupScreenState extends State<SignupScreen> {
           MaterialPageRoute(builder: (context) => HomeScreen()));
     } catch (e) {
       _errorMessage = 'An error occurred. Please try again later.';
-      setState(() {}); // Trigger UI update
+      setState(() {});
     }
   }
 
   bool _validateEmail(String email) {
-    // Simple regex to check email validity
     final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     return emailRegExp.hasMatch(email);
   }
 
   bool _validatePassword(String password) {
-    // Check for password length of at least 6 characters
     return password.length >= 6;
   }
 

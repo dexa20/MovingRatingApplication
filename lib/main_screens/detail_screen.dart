@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/models/movie.dart'; // Adjust the path to where your Movie model is located
+import '/models/movie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -20,11 +20,9 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize Firebase and the database instance with the specific URL directly here
     database = FirebaseDatabase.instanceFor(
       app: Firebase.app(),
-      databaseURL:
-          "https://dbtest-1117e-default-rtdb.firebaseio.com/", // Replace with your actual Firebase Realtime Database URL
+      databaseURL: "https://dbtest-1117e-default-rtdb.firebaseio.com/",
     );
     checkIfInWatchlist();
   }
@@ -33,8 +31,7 @@ class _DetailScreenState extends State<DetailScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final dbRef = database.ref('watchlist/${user.uid}');
-      final snapshot =
-          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
+      final snapshot = await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
       setState(() {
         isInWatchlist = snapshot.exists;
       });
@@ -53,8 +50,7 @@ class _DetailScreenState extends State<DetailScreen> {
       setState(() {
         isInWatchlist = true;
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Added to watchlist!')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added to watchlist!')));
     }
   }
 
@@ -62,22 +58,19 @@ class _DetailScreenState extends State<DetailScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final dbRef = database.ref('watchlist/${user.uid}');
-      final snapshot =
-          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
+      final snapshot = await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
       if (snapshot.exists) {
-        Map<dynamic, dynamic> children =
-            snapshot.value as Map<dynamic, dynamic>;
+        Map<dynamic, dynamic> children = snapshot.value as Map<dynamic, dynamic>;
         for (var key in children.keys) {
           if (children[key]['id'] == widget.movie.id) {
             await dbRef.child(key).remove();
-            break; // Assuming only one entry per movie, we break after finding the match
+            break;
           }
         }
         setState(() {
           isInWatchlist = false;
         });
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Removed from watchlist!')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed from watchlist!')));
       }
     }
   }
@@ -108,10 +101,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 children: <Widget>[
                   Text(
                     'Overview',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -145,7 +135,7 @@ class _DetailScreenState extends State<DetailScreen> {
             addToWatchlist();
           }
         },
-        backgroundColor: isInWatchlist ? Colors.red : Colors.green, // This line was modified
+        backgroundColor: isInWatchlist ? Colors.red : Colors.green,
         child: Icon(isInWatchlist ? Icons.remove : Icons.add),
       ),
     );

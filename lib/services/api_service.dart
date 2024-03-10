@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import '/models/movie.dart'; // Ensure this import path matches your project structure
+import '/models/movie.dart';
 
 class ApiService {
   final String _apiKey = '695f4589f386f1202dcf4b4d7d87a9be';
@@ -93,7 +93,6 @@ class ApiService {
     return allMovies;
   }
 
-  // Unified search method for movies and TV shows
   Future<List<Movie>> searchContent(String query) async {
     var movieSearchUrl = Uri.parse('$_baseUrl/search/movie?api_key=$_apiKey&query=${Uri.encodeComponent(query)}');
     var tvShowSearchUrl = Uri.parse('$_baseUrl/search/tv?api_key=$_apiKey&query=${Uri.encodeComponent(query)}');
@@ -114,7 +113,7 @@ class ApiService {
   }
 
   Future<List<Movie>> fetchMoviesByActorName(String actorName) async {
-    // Step 1: Search for the actor by name to get their ID
+
     final searchResponse = await http.get(Uri.parse('$_baseUrl/search/person?api_key=$_apiKey&query=${Uri.encodeComponent(actorName)}'));
     
     if (searchResponse.statusCode == 200) {
@@ -122,20 +121,19 @@ class ApiService {
       final List<dynamic> results = searchData['results'];
       
       if (results.isNotEmpty) {
-        // Assuming we take the first result as the correct actor
+
         final actorId = results[0]['id'];
-        
-        // Step 2: Fetch movies for the actor by ID
+
         final movieResponse = await http.get(Uri.parse('$_baseUrl/discover/movie?api_key=$_apiKey&with_cast=$actorId'));
         
         if (movieResponse.statusCode == 200) {
-          // Parse movies from the response
+
           return _parseMoviesResponse(movieResponse);
         } else {
           throw Exception('Failed to load movies for actor');
         }
       } else {
-        // No actor found
+
         return [];
       }
     } else {
@@ -153,7 +151,7 @@ class ApiService {
   }
 
   int _getGenreIdByNameForMovies(String genreName) {
-    // Example genre mapping, update with actual IDs
+
     const Map<String, int> genreIds = {
       'Action': 28,
       'Drama': 18,
@@ -164,7 +162,7 @@ class ApiService {
   }
 
   int _getGenreIdByNameForTvShows(String genreName) {
-    // Example genre mapping, update with actual IDs
+
     const Map<String, int> genreIds = {
       'Action': 10759,
       'Drama': 18,

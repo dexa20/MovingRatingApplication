@@ -23,7 +23,6 @@ class Movie {
     return posterPath != null ? '$_imageBaseUrl$posterPath' : 'path/to/fallback/image.jpg';
   }
 
-  // Existing factory constructor for creating a Movie object from API JSON responses
   factory Movie.fromJson(Map<String, dynamic> json, {bool isTV = false}) {
     return Movie(
       id: json['id'] as int? ?? 0,
