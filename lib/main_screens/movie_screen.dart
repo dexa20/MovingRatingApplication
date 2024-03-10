@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '/models/movie.dart';
 import '/services/api_service.dart';
 import '/widgets/movie_card.dart';
@@ -15,17 +16,26 @@ class _MovieScreenState extends State<MovieScreen> {
   String selectedGenre = 'Popular Movies';
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechEnabled = false;
 
   @override
   void initState() {
     super.initState();
     futureMovies = ApiService().fetchPopularMovies();
+    _initSpeech();
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _debounce?.cancel();
+    _speechToText.stop();
     super.dispose();
   }
 
@@ -44,6 +54,24 @@ class _MovieScreenState extends State<MovieScreen> {
         }
       });
     });
+  }
+
+  void _listen() async {
+    if (!_speechToText.isListening) {
+      bool available = await _speechToText.listen(
+        onResult: (result) => setState(() {
+          _searchController.text = result.recognizedWords;
+          // Trigger movie fetch based on the recognized words
+          _fetchMovies(query: result.recognizedWords);
+        }),
+      );
+      if (available) {
+        setState(() {});
+      }
+    } else {
+      _speechToText.stop();
+      setState(() {});
+    }
   }
 
   @override
@@ -67,6 +95,10 @@ class _MovieScreenState extends State<MovieScreen> {
         ),
         backgroundColor: Colors.green,
         actions: <Widget>[
+          IconButton(
+            icon: Icon(_speechToText.isListening ? Icons.mic_off : Icons.mic),
+            onPressed: _speechEnabled ? _listen : null,
+          ),
           PopupMenuButton<String>(
             onSelected: (genre) {
               _searchController.clear(); // Clear search when selecting genre
@@ -87,9 +119,9 @@ class _MovieScreenState extends State<MovieScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Center(
               child: Text(
                 selectedGenre,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),

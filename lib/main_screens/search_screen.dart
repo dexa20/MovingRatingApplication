@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '/services/api_service.dart'; 
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '/services/api_service.dart';
 import '/models/movie.dart';
 import 'detail_screen.dart';
 
@@ -14,16 +15,30 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   TabController? _tabController;
 
   List<Movie> _searchResults = [];
-  List<Movie> _actorSearchResults = []; // New list for actor search results
+  List<Movie> _actorSearchResults = [];
+
+  stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
+    _initSpeech();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize(
+      onError: (val) => print('Error: $val'),
+      onStatus: (val) => print('Status: $val'),
+    );
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _speechToText.stop();
     _tabController?.dispose();
     super.dispose();
   }
@@ -57,6 +72,23 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
     }
   }
 
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speechToText.listen(
+        onResult: (val) => setState(() {
+          _searchController.text = val.recognizedWords;
+          _searchContent(val.recognizedWords);
+        }),
+      );
+      if (available) {
+        setState(() => _isListening = true);
+      }
+    } else {
+      _speechToText.stop();
+      setState(() => _isListening = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,13 +113,19 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         backgroundColor: Colors.green,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white, // Color of the text for selected tab
-          unselectedLabelColor: Colors.white.withOpacity(0.7), // Color of the text for unselected tabs
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.7),
           tabs: [
             Tab(text: 'Movies / TV Shows'),
             Tab(text: 'Actors'),
           ],
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
+            onPressed: _speechEnabled ? _listen : null,
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -104,7 +142,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
           ),
         ],
       ),
-      backgroundColor: Colors.grey[900], 
+      backgroundColor: Colors.grey[900],
     );
   }
 
