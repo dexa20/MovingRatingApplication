@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart'; // Import the connectivity_plus package
 import '/main_screens/home_screen.dart'; // Update this import path according to your project structure
 import '/authentication_screens/signup_screen.dart'; // Update this path to where your SignupScreen class is located.
 
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
   String _errorMessage = '';
+  bool _isPasswordVisible = false; // State to manage password visibility
 
   @override
   void initState() {
@@ -28,43 +30,69 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  bool _isEmailValid(String email) {
+    final RegExp emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
+  bool _isPasswordValid(String password) {
+    return password.length >= 6;
+  }
+
   void _login() async {
     setState(() {
       _errorMessage = ''; // Reset error message
     });
 
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty) {
+    // Check internet connectivity
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      // No internet connection
+      setState(() {
+        _errorMessage = 'No internet connection. Please connect to the internet and try again.';
+      });
+      return; // Exit the method if no internet connection
+    }
+
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = 'Please fill in all fields.';
       });
       return;
     }
 
+    if (!_isEmailValid(email)) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address.';
+      });
+      return;
+    }
+
+    if (!_isPasswordValid(password)) {
+      setState(() {
+        _errorMessage = 'Password must be at least 6 characters.';
+      });
+      return;
+    }
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('rememberMe', _rememberMe);
 
-      // Navigate to the home screen
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        if (e.code == 'user-not-found') {
-          _errorMessage = 'No user found for that email.';
-        } else if (e.code == 'wrong-password') {
-          _errorMessage = 'Wrong password provided for that user.';
-        } else {
-          _errorMessage = 'Firebase Auth Error: ${e.message}';
-        }
-      });
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred. Please try again. Error: $e';
+        _errorMessage = 'Invalid email address or password.';
       });
     }
   }
@@ -76,8 +104,8 @@ class _LoginScreenState extends State<LoginScreen> {
         title: Text(
           'DM Flix',
           style: TextStyle(
-            color: Colors.white, // Sets the text color to white
-            fontWeight: FontWeight.bold, // Makes the text bold
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -92,9 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               'Login Page',
               style: TextStyle(
-                  fontSize: 32.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+                fontSize: 32.0,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 48.0),
@@ -102,8 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _emailController,
               decoration: InputDecoration(
                 hintText: 'Email',
-                hintStyle: TextStyle(
-                    color: Colors.grey), // To make hint text styled differently
+                hintStyle: TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -117,15 +144,26 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _passwordController,
               decoration: InputDecoration(
                 hintText: 'Password',
-                hintStyle: TextStyle(
-                    color: Colors.grey), // To make hint text styled differently
+                hintStyle: TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
+                // Toggle visibility icon
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Theme.of(context).primaryColorDark,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
               ),
-              obscureText: true, // Keeps password obscured
+              obscureText: !_isPasswordVisible, // Control visibility
             ),
             SizedBox(height: 20),
             Row(
@@ -138,9 +176,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       _rememberMe = value!;
                     });
                   },
-                  checkColor: Colors.green, // color of the tick
-                  fillColor: MaterialStateProperty.all(
-                      Colors.white), // color of the checkbox
+                  checkColor: Colors.green,
+                  fillColor: MaterialStateProperty.all(Colors.white),
                 ),
                 Text(
                   'Remember Me',
@@ -151,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               child: Text(
-                'Login', // Change the text here to 'Login'
+                'Login',
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
@@ -165,13 +202,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed: _login, // Keep your login function here
+              onPressed: _login,
             ),
             SizedBox(height: 16.0),
             TextButton(
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => SignupScreen())),
-              child: Text("Don't have an account? Sign Up"),
+              child: Text(
+                "Don't have an account? Sign Up",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             SizedBox(height: 20),
             if (_errorMessage.isNotEmpty)
