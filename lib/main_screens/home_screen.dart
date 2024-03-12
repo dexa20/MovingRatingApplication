@@ -83,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                     Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen()));
                   },
                   child: Container(
-                    margin: const EdgeInsets.only(right: 4),
+                    margin: const EdgeInsets.only(right: 6),
                     child: CircleAvatar(
                       backgroundImage: NetworkImage(snapshot.data!),
                       radius: 16,

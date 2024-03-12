@@ -174,11 +174,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: _pickImage,
               child: Text('Change Profile Image',
-                  style: TextStyle(color: Colors.green, fontSize: 13)),
+                  style: TextStyle(color: Colors.green, fontSize: 14)),
             ),
             SizedBox(height: 20),
-            SizedBox(height: 20),
-            SizedBox(height: 20),
+
             Center(
               child: Text(
                 'Email: ${user?.email ?? 'No email available'}',
