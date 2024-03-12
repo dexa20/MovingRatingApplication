@@ -53,21 +53,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       firebase_storage.UploadTask uploadTask;
 
       if (kIsWeb) {
-        // Web uses putData with bytes
         final bytes = await pickedFile.readAsBytes();
         uploadTask = firebase_storage.FirebaseStorage.instance
             .ref(refPath)
             .putData(bytes,
                 firebase_storage.SettableMetadata(contentType: 'image/jpeg'));
       } else {
-        // Mobile platforms use putFile with a File instance
         File file = File(pickedFile.path);
         uploadTask = firebase_storage.FirebaseStorage.instance
             .ref(refPath)
             .putFile(file);
       }
 
-      // Common upload task handling
       try {
         final snapshot = await uploadTask.whenComplete(() {});
         final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -78,12 +75,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'profilePicture': downloadUrl,
         }, SetOptions(merge: true));
         setState(() {
-          _profileImageUrl =
-              downloadUrl; // Ensure this variable is declared to store the image URL
+          _profileImageUrl = downloadUrl;
         });
       } catch (e) {
-        print(e); // Handle the error appropriately
+        print(e);
       }
+    }
+  }
+
+  Future<void> _removeProfileImage() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .update({
+        'profilePicture': FieldValue.delete(),
+      });
+      setState(() {
+        _profileImageUrl = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to remove profile picture. Please try again.'),
+        ),
+      );
     }
   }
 
@@ -100,7 +116,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       AuthCredential credential = EmailAuthProvider.credential(
           email: user!.email!, password: oldPassword);
-
       await user!.reauthenticateWithCredential(credential);
       await user!.updatePassword(newPassword);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -118,8 +133,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('rememberMe', false);
     await _auth.signOut();
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => LoginScreen()));
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (Route<dynamic> route) => false);
   }
 
   @override
@@ -151,15 +167,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             TextButton(
-              onPressed: _pickImage,
-              child: Text('Change Profile Image?', style: TextStyle(color: Colors.white,)),
+              onPressed: _removeProfileImage,
+              child: Text('Remove Profile Image',
+                  style: TextStyle(color: Colors.red, fontSize: 14)),
             ),
+            TextButton(
+              onPressed: _pickImage,
+              child: Text('Change Profile Image',
+                  style: TextStyle(color: Colors.green, fontSize: 13)),
+            ),
+            SizedBox(height: 20),
+            SizedBox(height: 20),
             SizedBox(height: 20),
             Center(
               child: Text(
                 'Email: ${user?.email ?? 'No email available'}',
                 style: TextStyle(
-                    fontSize: 16.0,
+                    fontSize: 18.0,
                     color: Colors.white,
                     fontWeight: FontWeight.bold),
               ),
@@ -266,6 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: _logout,
             )
+            // The rest of your Widget tree remains unchanged
           ],
         ),
       ),

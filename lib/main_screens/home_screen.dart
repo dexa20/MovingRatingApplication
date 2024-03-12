@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/services/api_service.dart';
 import '/models/movie.dart';
@@ -18,19 +19,35 @@ class HomeScreen extends StatelessWidget {
 
   HomeScreen({Key? key}) : super(key: key);
 
+  Stream<String> fetchUserProfilePictureUrlStream() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .map((snapshot) {
+            if (snapshot.exists && snapshot.data()!.containsKey('profilePicture')) {
+              return snapshot.data()!['profilePicture'];
+            }
+            return '';
+          });
+    }
+    return Stream.value(''); // Return an empty stream if user is null
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'DM Flix',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        title: const Text(
+          'DM Flix',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.green,
         leading: Builder(
           builder: (BuildContext context) {
@@ -44,16 +61,43 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => SearchScreen()));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => SearchScreen()));
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Navigate to the ProfileScreen
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ProfileScreen()));
+          StreamBuilder<String>(
+            stream: fetchUserProfilePictureUrlStream(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                  margin: EdgeInsets.all(10),
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.0,
+                  ),
+                );
+              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen()));
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 4),
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(snapshot.data!),
+                      radius: 16,
+                    ),
+                  ),
+                );
+              } else {
+                return IconButton(
+                  icon: const Icon(Icons.account_circle),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen()));
+                  },
+                );
+              }
             },
           ),
         ],
@@ -81,8 +125,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      FirebaseAuth.instance.currentUser?.email ??
-                          'No email found',
+                      FirebaseAuth.instance.currentUser?.email ?? 'No email found',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -92,30 +135,15 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              _drawerItem(
-                  Icons.movie,
-                  'Movies',
-                  () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => MovieScreen()))),
-              _drawerItem(
-                  Icons.tv,
-                  'TV Shows',
-                  () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => TVShowScreen()))),
-              _drawerItem(
-                  Icons.watch_later,
-                  'Watchlist',
-                  () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => WatchlistScreen()))),
+              _drawerItem(Icons.movie, 'Movies', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => MovieScreen()))),
+              _drawerItem(Icons.tv, 'TV Shows', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TVShowScreen()))),
+              _drawerItem(Icons.watch_later, 'Watchlist', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => WatchlistScreen()))),
               Divider(color: Colors.grey[800]),
               _drawerItem(Icons.logout, 'Logout', () async {
-                final SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('rememberMe', false);
                 await FirebaseAuth.instance.signOut();
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
-                    (Route<dynamic> route) => false);
+                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
               }),
             ],
           ),
@@ -157,9 +185,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(title,
-          style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+      child: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
     );
   }
 
@@ -170,8 +196,7 @@ class HomeScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}',
-              style: const TextStyle(color: Colors.white));
+          return Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white));
         } else if (snapshot.hasData) {
           return Container(
             height: 280,
@@ -181,16 +206,14 @@ class HomeScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 Movie movie = snapshot.data![index];
                 return GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => DetailScreen(movie: movie))),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => DetailScreen(movie: movie))),
                   child: MovieCard(movie: movie),
                 );
               },
             ),
           );
         } else {
-          return const Text('No movies found',
-              style: TextStyle(color: Colors.white));
+          return const Text('No movies found', style: TextStyle(color: Colors.white));
         }
       },
     );
