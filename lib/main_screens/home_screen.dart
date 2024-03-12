@@ -11,6 +11,7 @@ import 'movie_screen.dart';
 import 'tv_show_screen.dart';
 import 'watchlist_screen.dart';
 import 'search_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final ApiService _movieService = ApiService();
@@ -43,7 +44,16 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => SearchScreen()));
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => SearchScreen()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              // Navigate to the ProfileScreen
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ProfileScreen()));
             },
           ),
         ],
@@ -71,7 +81,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      FirebaseAuth.instance.currentUser?.email ?? 'No email found',
+                      FirebaseAuth.instance.currentUser?.email ??
+                          'No email found',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -81,15 +92,30 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              _drawerItem(Icons.movie, 'Movies', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => MovieScreen()))),
-              _drawerItem(Icons.tv, 'TV Shows', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TVShowScreen()))),
-              _drawerItem(Icons.watch_later, 'Watchlist', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => WatchlistScreen()))),
+              _drawerItem(
+                  Icons.movie,
+                  'Movies',
+                  () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => MovieScreen()))),
+              _drawerItem(
+                  Icons.tv,
+                  'TV Shows',
+                  () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => TVShowScreen()))),
+              _drawerItem(
+                  Icons.watch_later,
+                  'Watchlist',
+                  () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => WatchlistScreen()))),
               Divider(color: Colors.grey[800]),
               _drawerItem(Icons.logout, 'Logout', () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
                 await prefs.setBool('rememberMe', false);
                 await FirebaseAuth.instance.signOut();
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    (Route<dynamic> route) => false);
               }),
             ],
           ),
@@ -131,7 +157,9 @@ class HomeScreen extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+      child: Text(title,
+          style: TextStyle(
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
     );
   }
 
@@ -142,7 +170,8 @@ class HomeScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white));
+          return Text('Error: ${snapshot.error}',
+              style: const TextStyle(color: Colors.white));
         } else if (snapshot.hasData) {
           return Container(
             height: 280,
@@ -152,14 +181,16 @@ class HomeScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 Movie movie = snapshot.data![index];
                 return GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => DetailScreen(movie: movie))),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => DetailScreen(movie: movie))),
                   child: MovieCard(movie: movie),
                 );
               },
             ),
           );
         } else {
-          return const Text('No movies found', style: TextStyle(color: Colors.white));
+          return const Text('No movies found',
+              style: TextStyle(color: Colors.white));
         }
       },
     );
