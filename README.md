@@ -32,6 +32,3 @@ Welcome to my Flutter movie rating application! This repository contains the cod
 
 Contributions are welcome! Whether it's adding new features, fixing bugs, or improving UI/UX, your contributions can help make this app even better. Feel free to open an issue or submit a pull request.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
