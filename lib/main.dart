@@ -28,39 +28,47 @@ class MyApp extends StatelessWidget {
       home: AuthWrapper(),
       routes: {
         '/signup': (context) => SignupScreen(),
+        // Make sure to add routes for other screens as needed
       },
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getInitialScreen(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return snapshot.data as Widget;
-        } else {
-          return Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-      },
-    );
+  _AuthWrapperState createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      _getInitialScreen();
+    });
   }
 
-  Future<Widget> _getInitialScreen() async {
+  Future<void> _getInitialScreen() async {
+    await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds
+
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool rememberMe = prefs.getBool('rememberMe') ?? false;
 
     if (rememberMe && FirebaseAuth.instance.currentUser != null) {
-      return HomeScreen();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
     } else {
-      return LoginScreen();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Splash screen content goes here
+    return Scaffold(
+      body: Center(
+        child: Text('DM Flix', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
+      ),
+    );
   }
 }
