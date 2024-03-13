@@ -27,7 +27,9 @@ class _TVShowScreenState extends State<TVShowScreen> {
   }
 
   void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize(onError: (error) => print("SpeechToText error: $error"), onStatus: (status) => print("SpeechToText status: $status"));
+    _speechEnabled = await _speechToText.initialize(
+        onError: (error) => print("SpeechToText error: $error"),
+        onStatus: (status) => print("SpeechToText status: $status"));
     setState(() {});
   }
 
@@ -103,7 +105,25 @@ class _TVShowScreenState extends State<TVShowScreen> {
               _fetchTVShows(genre: genre);
             },
             itemBuilder: (BuildContext context) {
-              return ['Popular TV Shows', 'Action', 'Drama', 'Comedy', 'Family/Kids'].map((String choice) {
+              return [
+                'Popular TV Shows',
+                'Action & Adventure',
+                'Animation',
+                'Comedy',
+                'Crime',
+                'Documentary',
+                'Drama',
+                'Family',
+                'Kids',
+                'Mystery',
+                'News',
+                'Reality',
+                'Science Fiction & Fantasy',
+                'Soap',
+                'Talk',
+                'War & Politics',
+                'Western',
+              ].map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -122,7 +142,10 @@ class _TVShowScreenState extends State<TVShowScreen> {
               padding: EdgeInsets.all(8.0),
               child: Text(
                 selectedGenre,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
             ),
           ),

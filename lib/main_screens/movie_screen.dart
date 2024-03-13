@@ -104,7 +104,28 @@ class _MovieScreenState extends State<MovieScreen> {
               _fetchMovies(genre: genre);
             },
             itemBuilder: (BuildContext context) {
-              return ['Popular Movies', 'Action', 'Drama', 'Comedy', 'Family/Kids'].map((String choice) {
+              return [
+                'Popular Movies',
+                'Action',
+                'Adventure',
+                'Animation',
+                'Comedy',
+                'Crime',
+                'Documentary',
+                'Drama',
+                'Family',
+                'Fantasy',
+                'History',
+                'Horror',
+                'Music',
+                'Mystery',
+                'Romance',
+                'Science Fiction',
+                'TV Movie',
+                'Thriller',
+                'War',
+                'Western',
+              ].map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -123,7 +144,10 @@ class _MovieScreenState extends State<MovieScreen> {
             child: Center(
               child: Text(
                 selectedGenre,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
             ),
           ),
