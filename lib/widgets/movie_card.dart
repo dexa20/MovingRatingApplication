@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import '/models/movie.dart'; 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart'; 
-import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart'; // Importing Flutter material library
+import '/models/movie.dart'; // Importing movie model
+import 'package:firebase_auth/firebase_auth.dart'; // Importing Firebase authentication library
+import 'package:firebase_core/firebase_core.dart'; // Importing Firebase core library
+import 'package:firebase_database/firebase_database.dart'; // Importing Firebase Realtime Database library
 
-class MovieCard extends StatefulWidget {
-  final Movie movie;
+class MovieCard extends StatefulWidget { // StatefulWidget for displaying movie details
+  final Movie movie; // Movie object to display details
 
   const MovieCard({Key? key, required this.movie}) : super(key: key);
 
@@ -14,9 +14,9 @@ class MovieCard extends StatefulWidget {
 }
 
 class _MovieCardState extends State<MovieCard> {
-  bool isInWatchlist = false;
+  bool isInWatchlist = false; // Flag to track if movie is in user's watchlist
 
-  late final FirebaseDatabase database;
+  late final FirebaseDatabase database; // Firebase database instance
 
   @override
   void initState() {
@@ -24,65 +24,64 @@ class _MovieCardState extends State<MovieCard> {
 
     database = FirebaseDatabase.instanceFor(
       app: Firebase.app(),
-      databaseURL:
-          "https://dbtest-1117e-default-rtdb.firebaseio.com/", 
+      databaseURL: "https://dbtest-1117e-default-rtdb.firebaseio.com/", // Firebase database URL
     );
-    checkIfInWatchlist();
+    checkIfInWatchlist(); // Check if movie is in user's watchlist
   }
 
   void checkIfInWatchlist() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser; // Get current user
     if (user != null) {
-      final dbRef = database.ref('watchlist/${user.uid}');
+      final dbRef = database.ref('watchlist/${user.uid}'); // Reference to user's watchlist
       final snapshot =
-          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
-      if (snapshot.exists) {
+          await dbRef.orderByChild('id').equalTo(widget.movie.id).get(); // Get snapshot of movie in watchlist
+      if (snapshot.exists) { // Check if movie exists in watchlist
         setState(() {
-          isInWatchlist = true;
+          isInWatchlist = true; // Set isInWatchlist flag to true if movie is in watchlist
         });
       }
     }
   }
 
   void addToWatchlist() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser; // Get current user
     if (user != null) {
       final movieData = {
-        'id': widget.movie.id,
-        'isTV': widget.movie.isTV,
+        'id': widget.movie.id, // Movie ID
+        'isTV': widget.movie.isTV, // Flag indicating if it's a TV show
       };
-      final dbRef = database.ref('watchlist/${user.uid}');
-      await dbRef.push().set(movieData);
+      final dbRef = database.ref('watchlist/${user.uid}'); // Reference to user's watchlist
+      await dbRef.push().set(movieData); // Add movie to user's watchlist
       setState(() {
-        isInWatchlist = true;
+        isInWatchlist = true; // Update isInWatchlist flag
       });
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Added to watchlist!')));
+          .showSnackBar(SnackBar(content: Text('Added to watchlist!'))); // Show confirmation message
     }
   }
 
   void removeFromWatchlist() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser; // Get current user
     if (user != null) {
-      final dbRef = database.ref('watchlist/${user.uid}');
+      final dbRef = database.ref('watchlist/${user.uid}'); // Reference to user's watchlist
       final snapshot =
-          await dbRef.orderByChild('id').equalTo(widget.movie.id).get();
-      if (snapshot.exists) {
+          await dbRef.orderByChild('id').equalTo(widget.movie.id).get(); // Get snapshot of movie in watchlist
+      if (snapshot.exists) { // Check if movie exists in watchlist
         Map<dynamic, dynamic> children =
-            snapshot.value as Map<dynamic, dynamic>;
+            snapshot.value as Map<dynamic, dynamic>; // Extract children from snapshot
         String? keyToRemove;
         children.forEach((key, value) {
           if (value['id'] == widget.movie.id) {
-            keyToRemove = key;
+            keyToRemove = key; // Get key of movie to remove from watchlist
           }
         });
         if (keyToRemove != null) {
-          await dbRef.child(keyToRemove!).remove();
+          await dbRef.child(keyToRemove!).remove(); // Remove movie from watchlist
           setState(() {
-            isInWatchlist = false;
+            isInWatchlist = false; // Update isInWatchlist flag
           });
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Removed from watchlist!')));
+              .showSnackBar(SnackBar(content: Text('Removed from watchlist!'))); // Show confirmation message
         }
       }
     }
@@ -114,7 +113,7 @@ class _MovieCardState extends State<MovieCard> {
           children: <Widget>[
             Expanded(
               child: Image.network(
-                widget.movie.imageUrl,
+                widget.movie.imageUrl, // Movie image URL
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
@@ -133,7 +132,7 @@ class _MovieCardState extends State<MovieCard> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    widget.movie.title,
+                    widget.movie.title, // Movie title
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 16,
@@ -145,10 +144,10 @@ class _MovieCardState extends State<MovieCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Icon(Icons.star, color: Colors.yellow[700], size: 20),
+                      Icon(Icons.star, color: Colors.yellow[700], size: 20), // Star icon for rating
                       SizedBox(width: 4),
                       Text(
-                        '${widget.movie.rating?.toStringAsFixed(1) ?? 'N/A'}',
+                        '${widget.movie.rating?.toStringAsFixed(1) ?? 'N/A'}', // Movie rating
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
@@ -157,7 +156,7 @@ class _MovieCardState extends State<MovieCard> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          isInWatchlist ? Colors.red : Colors.green,
+                          isInWatchlist ? Colors.red : Colors.green, // Button color based on watchlist status
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -165,12 +164,12 @@ class _MovieCardState extends State<MovieCard> {
                     ),
                     onPressed: () async {
                       if (isInWatchlist) {
-                        removeFromWatchlist();
+                        removeFromWatchlist(); // Remove movie from watchlist
                       } else {
-                        addToWatchlist();
+                        addToWatchlist(); // Add movie to watchlist
                       }
                     },
-                    child: Text(isInWatchlist ? '- Watchlist' : '+ Watchlist'),
+                    child: Text(isInWatchlist ? '- Watchlist' : '+ Watchlist'), // Button label
                   ),
                 ],
               ),

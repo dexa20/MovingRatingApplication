@@ -1,3 +1,4 @@
+// Import necessary packages and files
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,28 +10,38 @@ import 'package:path/path.dart' as Path;
 import '/authentication_screens/login_screen.dart'; // Ensure this path is correct
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+// Profile Screen widget
 class ProfileScreen extends StatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // Text editing controllers for old and new password fields
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
+  // Firebase authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Current user
   User? user;
+  // Error message for password change
   String _errorMessage = '';
+  // Flags to control password visibility
   bool _isNewPasswordVisible = false;
   bool _isOldPasswordVisible = false;
-  String? _profileImageUrl; // Changed to String to hold URL
+  // Profile image URL
+  String? _profileImageUrl;
 
   @override
   void initState() {
     super.initState();
+    // Get the current user
     user = _auth.currentUser;
+    // Load user profile
     _loadUserProfile();
   }
 
+  // Function to load user profile details
   Future<void> _loadUserProfile() async {
     final doc = await FirebaseFirestore.instance
         .collection('users')
@@ -43,6 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Function to pick an image from gallery
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -83,6 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Function to remove profile image
   Future<void> _removeProfileImage() async {
     try {
       await FirebaseFirestore.instance
@@ -103,6 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Function to change password
   Future<void> _changePassword() async {
     String oldPassword = _oldPasswordController.text.trim();
     String newPassword = _newPasswordController.text.trim();
@@ -129,6 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Function to handle logout
   void _logout() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('rememberMe', false);
@@ -154,6 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            // Profile image
             Center(
               child: CircleAvatar(
                 radius: 60,
@@ -166,18 +182,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     : null,
               ),
             ),
+            // Button to remove profile image
             TextButton(
               onPressed: _removeProfileImage,
               child: Text('Remove Profile Image',
                   style: TextStyle(color: Colors.red, fontSize: 14)),
             ),
+            // Button to change profile image
             TextButton(
               onPressed: _pickImage,
               child: Text('Change Profile Image',
                   style: TextStyle(color: Colors.green, fontSize: 14)),
             ),
             SizedBox(height: 20),
-
+            // User email
             Center(
               child: Text(
                 'Email: ${user?.email ?? 'No email available'}',
@@ -188,6 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 20),
+            // Old password field
             TextField(
               controller: _oldPasswordController,
               decoration: InputDecoration(
@@ -215,6 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               obscureText: !_isOldPasswordVisible,
             ),
             SizedBox(height: 20),
+            // New password field
             TextField(
               controller: _newPasswordController,
               decoration: InputDecoration(
@@ -242,6 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               obscureText: !_isNewPasswordVisible,
             ),
             SizedBox(height: 20),
+            // Button to change password
             ElevatedButton(
               child: Text(
                 'Change Password',
@@ -261,6 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: _changePassword,
             ),
             SizedBox(height: 20),
+            // Error message if any
             if (_errorMessage.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(bottom: 16),
@@ -271,6 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            // Button to logout
             ElevatedButton(
               child: Text(
                 'Logout',

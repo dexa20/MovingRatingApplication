@@ -1,28 +1,34 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import '/main_screens/home_screen.dart';
-import '/authentication_screens/signup_screen.dart';
+// Import necessary packages and files
+import 'package:flutter/material.dart'; // Flutter material design components
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase authentication services
+import 'package:shared_preferences/shared_preferences.dart'; // Persistent local storage
+import 'package:connectivity_plus/connectivity_plus.dart'; // Internet connectivity check
+import '/main_screens/home_screen.dart'; // Import home screen widget
+import '/authentication_screens/signup_screen.dart'; // Import signup screen widget
 
+// Class for the login screen widget
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Controllers for email and password text fields
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = false;
-  String _errorMessage = '';
-  bool _isPasswordVisible = false;
+  // State variables
+  bool _rememberMe = false; // State to remember user's login
+  String _errorMessage = ''; // Error message display state
+  bool _isPasswordVisible = false; // State to toggle password visibility
 
   @override
   void initState() {
     super.initState();
+    // Load remember me preference when the screen initializes
     _loadRememberMePreference();
   }
 
+  // Function to load remember me preference from shared preferences
   Future<void> _loadRememberMePreference() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -30,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  // Function to validate email format
   bool _isEmailValid(String email) {
     final RegExp emailRegExp = RegExp(
       r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
@@ -37,15 +44,18 @@ class _LoginScreenState extends State<LoginScreen> {
     return emailRegExp.hasMatch(email);
   }
 
+  // Function to validate password length
   bool _isPasswordValid(String password) {
     return password.length >= 6;
   }
 
+  // Function to handle login process
   void _login() async {
     setState(() {
-      _errorMessage = '';
+      _errorMessage = ''; // Clear any previous error message
     });
 
+    // Check internet connectivity
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       setState(() {
@@ -54,9 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Retrieve email and password from text fields
     final String email = _emailController.text.trim();
     final String password = _passwordController.text.trim();
 
+    // Validate email and password
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = 'Please fill in all fields.';
@@ -78,14 +90,17 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Attempt to sign in with Firebase Auth
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      // Save remember me preference
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('rememberMe', _rememberMe);
 
+      // Navigate to home screen on successful login
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));
     } catch (e) {
@@ -99,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // App bar with title
         title: Text(
           'DM Flix',
           style: TextStyle(
@@ -115,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            // Title
             Text(
               'Login Page',
               style: TextStyle(
@@ -124,6 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 48.0),
+            // Email text field
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -138,6 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 8.0),
+            // Password text field
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -163,6 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: !_isPasswordVisible,
             ),
             SizedBox(height: 20),
+            // Remember me checkbox
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -183,6 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
             SizedBox(height: 20),
+            // Login button
             ElevatedButton(
               child: Text(
                 'Login',
@@ -202,6 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _login,
             ),
             SizedBox(height: 16.0),
+            // Sign up button
             TextButton(
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => SignupScreen())),
@@ -211,6 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(height: 20),
+            // Error message display
             if (_errorMessage.isNotEmpty)
               Text(
                 _errorMessage,

@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'main_screens/home_screen.dart';
-import 'authentication_screens/login_screen.dart';
-import 'authentication_screens/signup_screen.dart';
+import 'package:flutter/material.dart'; // Importing Flutter material library
+import 'package:firebase_core/firebase_core.dart'; // Importing Firebase core library
+import 'firebase_options.dart'; // Importing Firebase options
+import 'package:shared_preferences/shared_preferences.dart'; // Importing shared preferences for local storage
+import 'package:firebase_auth/firebase_auth.dart'; // Importing Firebase authentication library
+import 'main_screens/home_screen.dart'; // Importing home screen for authenticated users
+import 'authentication_screens/login_screen.dart'; // Importing login screen for authentication
+import 'authentication_screens/signup_screen.dart'; // Importing signup screen for user registration
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, // Initializing Firebase with default options
   );
 
   runApp(MyApp());
@@ -20,22 +20,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DM Flix',
+      title: 'DM Flix', // App title
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: Colors.grey[900],
+        primarySwatch: Colors.green, // Setting primary color theme
+        scaffoldBackgroundColor: Colors.grey[900], // Setting scaffold background color
       ),
-      home: AuthWrapper(),
+      home: AuthWrapper(), // Setting initial route to authentication wrapper
       routes: {
-        '/signup': (context) => SignupScreen(),
-        // Make sure to add routes for other screens as needed
+        '/signup': (context) => SignupScreen(), // Setting route for signup screen
       },
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, // Hiding debug banner
     );
   }
 }
 
-class AuthWrapper extends StatefulWidget {
+class AuthWrapper extends StatefulWidget { // Authentication wrapper widget
   @override
   _AuthWrapperState createState() => _AuthWrapperState();
 }
@@ -45,29 +44,28 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      _getInitialScreen();
+      _getInitialScreen(); // Getting initial screen after delay
     });
   }
 
   Future<void> _getInitialScreen() async {
-    await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds
+    await Future.delayed(Duration(seconds: 3)); // Wait for 3 seconds for better user experience
 
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool rememberMe = prefs.getBool('rememberMe') ?? false;
+    final SharedPreferences prefs = await SharedPreferences.getInstance(); // Get instance of shared preferences
+    final bool rememberMe = prefs.getBool('rememberMe') ?? false; // Check if remember me is enabled
 
-    if (rememberMe && FirebaseAuth.instance.currentUser != null) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
+    if (rememberMe && FirebaseAuth.instance.currentUser != null) { // If remember me is enabled and user is authenticated
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen())); // Navigate to home screen
     } else {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen())); // Navigate to login screen
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Splash screen content goes here
     return Scaffold(
       body: Center(
-        child: Text('DM Flix', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
+        child: Text('DM Flix', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)), // Display app name
       ),
     );
   }

@@ -1,24 +1,30 @@
+// Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '/main_screens/home_screen.dart';
 
+// Class for the signup screen widget
 class SignupScreen extends StatefulWidget {
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  // Controllers for email and password text fields
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // State variables
   String _errorMessage = '';
   bool _isPasswordVisible = false;
 
+  // Function to handle signup process
   void _signUp() async {
     setState(() {
       _errorMessage = '';
     });
 
+    // Check internet connectivity
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       setState(() {
@@ -27,6 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
+    // Validate email and password fields
     if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
       setState(() {
         _errorMessage = 'Please fill in all fields.';
@@ -46,11 +53,13 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
+    // Attempt to create user with Firebase Auth
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      // Navigate to home screen on successful signup
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()));
     } catch (e) {
@@ -59,11 +68,13 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  // Function to validate email format
   bool _validateEmail(String email) {
     final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     return emailRegExp.hasMatch(email);
   }
 
+  // Function to validate password length
   bool _validatePassword(String password) {
     return password.length >= 6;
   }
@@ -72,6 +83,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // App bar with title
         title: Text(
           'DM Flix',
           style: TextStyle(
@@ -88,12 +100,14 @@ class _SignupScreenState extends State<SignupScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            // Title
             Text(
               'Signup Page',
               style: TextStyle(fontSize: 32.0, color: Colors.white, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 48.0),
+            // Email text field
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -107,6 +121,7 @@ class _SignupScreenState extends State<SignupScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 8.0),
+            // Password text field
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -131,6 +146,7 @@ class _SignupScreenState extends State<SignupScreen> {
               obscureText: !_isPasswordVisible,
             ),
             SizedBox(height: 24.0),
+            // Signup button
             ElevatedButton(
               child: Text(
                 'Sign Up',
@@ -149,6 +165,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               onPressed: _signUp,
             ),
+            // Error message display
             if (_errorMessage.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 20),

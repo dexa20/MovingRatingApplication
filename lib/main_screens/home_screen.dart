@@ -1,3 +1,4 @@
+// Import necessary packages and files
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,11 +15,13 @@ import 'watchlist_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
 
+// Class for the home screen widget
 class HomeScreen extends StatelessWidget {
   final ApiService _movieService = ApiService();
 
   HomeScreen({Key? key}) : super(key: key);
 
+  // Stream to fetch the user's profile picture URL
   Stream<String> fetchUserProfilePictureUrlStream() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -39,6 +42,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // App bar
       appBar: AppBar(
         title: const Text(
           'DM Flix',
@@ -49,6 +53,7 @@ class HomeScreen extends StatelessWidget {
         ),
         centerTitle: true,
         backgroundColor: Colors.green,
+        // Leading icon button to open drawer
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
@@ -57,13 +62,16 @@ class HomeScreen extends StatelessWidget {
             );
           },
         ),
+        // Action buttons
         actions: <Widget>[
+          // Search button
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (context) => SearchScreen()));
             },
           ),
+          // Profile picture or account icon
           StreamBuilder<String>(
             stream: fetchUserProfilePictureUrlStream(),
             builder: (context, snapshot) {
@@ -102,12 +110,14 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+      // Drawer
       drawer: Drawer(
         child: Container(
           color: Colors.grey[900],
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
+              // Drawer header
               DrawerHeader(
                 decoration: BoxDecoration(
                   color: Colors.green,
@@ -135,6 +145,7 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              // Drawer items
               _drawerItem(Icons.movie, 'Movies', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => MovieScreen()))),
               _drawerItem(Icons.tv, 'TV Shows', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TVShowScreen()))),
               _drawerItem(Icons.watch_later, 'Watchlist', () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => WatchlistScreen()))),
@@ -149,19 +160,25 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      // Body
       body: Container(
         color: Colors.grey[900],
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Trending movies section
               _buildSectionTitle('Trending Movies'),
               TrendingSlider(),
+              // Cinema movies section
               _buildSectionTitle('What\'s on at the cinema?'),
               _buildMovieSection(_movieService.fetchCinemaMovies()),
+              // TV shows section
               _buildSectionTitle('What\'s on TV tonight?'),
               _buildMovieSection(_movieService.fetchTVAiringToday()),
+              // Best movies of the year section
               _buildSectionTitle('What are the best movies this year?'),
               _buildMovieSection(_movieService.fetchBestMoviesOfYear()),
+              // Highest grossing movies section
               _buildSectionTitle('Highest Grossing Movies of All Time'),
               _buildMovieSection(_movieService.fetchHighestGrossingMovies()),
             ],
@@ -171,6 +188,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // Widget for drawer items
   Widget _drawerItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: Colors.green),
@@ -182,6 +200,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // Widget for section titles
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -189,6 +208,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // Widget for building movie sections
   Widget _buildMovieSection(Future<List<Movie>> moviesFuture) {
     return FutureBuilder<List<Movie>>(
       future: moviesFuture,

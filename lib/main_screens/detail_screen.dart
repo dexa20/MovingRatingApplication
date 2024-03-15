@@ -1,3 +1,4 @@
+// Import necessary packages and files
 import 'package:flutter/material.dart';
 import '/models/movie.dart';
 import '/models/cast_member.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+// Class for the detail screen widget
 class DetailScreen extends StatefulWidget {
   final Movie movie;
 
@@ -16,6 +18,7 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  // State variables
   bool isInWatchlist = false;
   late final FirebaseDatabase database;
   List<CastMember> cast = [];
@@ -23,14 +26,18 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize Firebase database
     database = FirebaseDatabase.instanceFor(
       app: Firebase.app(),
       databaseURL: "https://dbtest-1117e-default-rtdb.firebaseio.com/",
     );
+    // Check if the movie is in the user's watchlist
     checkIfInWatchlist();
+    // Fetch cast details
     fetchCastDetails();
   }
 
+  // Function to check if the movie is in the user's watchlist
   void checkIfInWatchlist() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -43,6 +50,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
+  // Function to add movie to watchlist
   void addToWatchlist() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -60,6 +68,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
+  // Function to remove movie from watchlist
   void removeFromWatchlist() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -84,6 +93,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
+  // Function to fetch cast details
   void fetchCastDetails() async {
     final castMembers =
         await ApiService().fetchCast(widget.movie.id, widget.movie.isTV);
@@ -96,6 +106,7 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // App bar with movie title
         title: Text(widget.movie.title, style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green,
         elevation: 0, // Removes the shadow
@@ -103,6 +114,7 @@ class _DetailScreenState extends State<DetailScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
+            // Movie image
             ClipRRect(
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
               child: Image.network(
@@ -115,6 +127,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
               ),
             ),
+            // Movie details
             Container(
               decoration: BoxDecoration(
                 color: Colors.grey[900],
@@ -128,15 +141,13 @@ class _DetailScreenState extends State<DetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    // Overview section
                     Text(
                       'Overview',
                       style: TextStyle(
-                        fontSize: 20.0, // Approximate font size for headline6
-                        fontWeight: FontWeight
-                            .bold, // Commonly used weight for headline6
-                        color: Colors.white, // Your specified color
-                        // If your app theme specifies a font family, you can include it as well:
-                        // fontFamily: 'YourFontFamily',
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                     SizedBox(height: 8),
@@ -145,11 +156,13 @@ class _DetailScreenState extends State<DetailScreen> {
                       style: TextStyle(color: Colors.white70),
                     ),
                     SizedBox(height: 16),
+                    // Release date section
                     Text(
                       'Release Date: ${widget.movie.releaseDate ?? 'Unknown'}',
                       style: TextStyle(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
+                    // Rating section
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -162,18 +175,17 @@ class _DetailScreenState extends State<DetailScreen> {
                       ],
                     ),
                     SizedBox(height: 24),
+                    // Cast section
                     Text(
                       'Cast',
                       style: TextStyle(
-                        fontSize: 20.0, // Approximate font size for headline6
-                        fontWeight: FontWeight
-                            .bold, // Commonly used weight for headline6
-                        color: Colors.white, // Your specified color
-                        // If your app theme specifies a font family, you can include it as well:
-                        // fontFamily: 'YourFontFamily',
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                     SizedBox(height: 10),
+                    // List of cast members
                     Container(
                       height: 120,
                       child: ListView.builder(
@@ -235,6 +247,7 @@ class _DetailScreenState extends State<DetailScreen> {
           ],
         ),
       ),
+      // Floating action button for watchlist functionality
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (isInWatchlist) {
