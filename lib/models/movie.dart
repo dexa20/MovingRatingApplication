@@ -34,5 +34,17 @@ class Movie {
       isTV: isTV,
     );
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'poster_path': posterPath,
+      'overview': overview,
+      'vote_average': rating,
+      'release_date': releaseDate,
+      'isTV': isTV,
+    };
+  }
 
 }
